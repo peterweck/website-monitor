@@ -26,7 +26,7 @@ export const include = filename =>
 
 export const TITLE = 'Website Monitor';
 
-export const DEVELOPER = 'amit@labnol.org';
+export const DEVELOPER = 'support@storyjumper.com';
 
 export const SUCCESS = 200;
 

@@ -294,7 +294,7 @@ var include = function include(filename) {
   return HtmlService.createHtmlOutputFromFile(filename).getContent();
 };
 var TITLE = 'Website Monitor';
-var DEVELOPER = 'amit@labnol.org';
+var DEVELOPER = 'support@storyjumper.com';
 var SUCCESS = 200;
 var FAILERROR = 550;
 
