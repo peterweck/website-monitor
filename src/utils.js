@@ -29,3 +29,5 @@ export const TITLE = 'Website Monitor';
 export const DEVELOPER = 'amit@labnol.org';
 
 export const SUCCESS = 200;
+
+export const FAILERROR = 550;

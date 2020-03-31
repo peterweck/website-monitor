@@ -1,7 +1,7 @@
 import { expBackoff, sleep } from './utils';
 
 const TRIGGER = 'trigger_WebsiteMonitor';
-const INTERVAL = 5;
+const INTERVAL = 1;
 
 const toggleTrigger = enableTrigger => {
   const triggerList = {};

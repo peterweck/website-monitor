@@ -1,4 +1,4 @@
-import { logException, SUCCESS } from './utils';
+import { logException, SUCCESS, FAILERROR } from './utils';
 
 const sitecall = func => {
   const MAX = 3;
@@ -17,19 +17,36 @@ const sitecall = func => {
 };
 
 const getSiteStatus = (url = '') => {
-  try {
-    const response = sitecall(() =>
-      UrlFetchApp.fetch(url, {
-        validateHttpsCertificates: false,
-        followRedirects: true,
-        muteHttpExceptions: false
-      })
-    );
-    return response.getResponseCode();
-  } catch (f) {
-    logException(f);
-    return SUCCESS - 1;
+  let maxtries = 3;
+  let fetchurl = url;
+  let rtn = false;
+  const fn = () =>
+    UrlFetchApp.fetch(fetchurl, {
+      validateHttpsCertificates: false,
+      followRedirects: false,
+      muteHttpExceptions: false
+    });
+  while (!rtn && maxtries > 0) {
+    maxtries -= 1;
+    try {
+      const response = sitecall(fn);
+      const headers = response.getHeaders();
+      const responseCode = response.getResponseCode();
+      if (responseCode >= 300 && responseCode < 400) {
+        if (headers.Location && headers.Location.match(/\/main\/error$/)) {
+          rtn = FAILERROR;
+        } else {
+          fetchurl = headers.Location;
+        }
+      } else {
+        rtn = response.getResponseCode();
+      }
+    } catch (f) {
+      logException(f);
+      rtn = SUCCESS - 1;
+    }
   }
+  return rtn;
 };
 
 export default getSiteStatus;

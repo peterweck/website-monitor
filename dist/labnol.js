@@ -217,7 +217,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(4);
 
 var TRIGGER = 'trigger_WebsiteMonitor';
-var INTERVAL = 5;
+var INTERVAL = 1;
 
 var toggleTrigger = function toggleTrigger(enableTrigger) {
   var triggerList = {};
@@ -264,6 +264,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "TITLE", function() { return TITLE; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "DEVELOPER", function() { return DEVELOPER; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "SUCCESS", function() { return SUCCESS; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "FAILERROR", function() { return FAILERROR; });
 var logException = function logException(e) {
   console.error(e);
 };
@@ -295,6 +296,7 @@ var include = function include(filename) {
 var TITLE = 'Website Monitor';
 var DEVELOPER = 'amit@labnol.org';
 var SUCCESS = 200;
+var FAILERROR = 550;
 
 /***/ }),
 /* 5 */
@@ -574,20 +576,42 @@ var sitecall = function sitecall(func) {
 
 var getSiteStatus = function getSiteStatus() {
   var url = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '';
+  var maxtries = 3;
+  var fetchurl = url;
+  var rtn = false;
 
-  try {
-    var response = sitecall(function () {
-      return UrlFetchApp.fetch(url, {
-        validateHttpsCertificates: false,
-        followRedirects: true,
-        muteHttpExceptions: false
-      });
+  var fn = function fn() {
+    return UrlFetchApp.fetch(fetchurl, {
+      validateHttpsCertificates: false,
+      followRedirects: false,
+      muteHttpExceptions: false
     });
-    return response.getResponseCode();
-  } catch (f) {
-    Object(_utils__WEBPACK_IMPORTED_MODULE_0__["logException"])(f);
-    return _utils__WEBPACK_IMPORTED_MODULE_0__["SUCCESS"] - 1;
+  };
+
+  while (!rtn && maxtries > 0) {
+    maxtries -= 1;
+
+    try {
+      var response = sitecall(fn);
+      var headers = response.getHeaders();
+      var responseCode = response.getResponseCode();
+
+      if (responseCode >= 300 && responseCode < 400) {
+        if (headers.Location && headers.Location.match(/\/main\/error$/)) {
+          rtn = _utils__WEBPACK_IMPORTED_MODULE_0__["FAILERROR"];
+        } else {
+          fetchurl = headers.Location;
+        }
+      } else {
+        rtn = response.getResponseCode();
+      }
+    } catch (f) {
+      Object(_utils__WEBPACK_IMPORTED_MODULE_0__["logException"])(f);
+      rtn = _utils__WEBPACK_IMPORTED_MODULE_0__["SUCCESS"] - 1;
+    }
   }
+
+  return rtn;
 };
 
 /* harmony default export */ __webpack_exports__["default"] = (getSiteStatus);
